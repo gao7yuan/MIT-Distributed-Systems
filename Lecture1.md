@@ -4,7 +4,7 @@
 
 - What is a distributed system?
   - **multiple cooperating computers**
-  - storage for big web sites, MapReduce, peer-to-peer sharing, &c
+  - storage for big web sites, MapReduce, peer-to-peer sharing, DNS, &c
   - lots of critical infrastructure is distributed
 
 - Why distributed?
@@ -31,26 +31,26 @@ http://pdos.csail.mit.edu/6.824
 ## MAIN TOPICS
 
 - This is a course about infrastructure, to be used by applications.
-  - About abstractions that hide distribution from applications.
-  - Three big kinds of abstraction:
-    - Storage.
-    - Communication.
-    - Computation.
+  - About abstractions that **hide distribution from applications**.
+  - Three big kinds of **abstraction**:
+    - **Storage.**
+    - **Communication.**
+    - **Computation.**
   - [diagram: users, application servers, storage servers]
 
 - Topic: implementation
   - RPC, threads, concurrency control.
 
 - Topic: performance
-  - The dream: scalable throughput.
+  - **The dream: scalable throughput.**
     - Nx servers -> Nx total throughput via parallel CPU, disk, net.
     - So handling more load only requires buying more computers.
   - Scaling gets harder as N grows:
     - Load imbalance, stragglers.
-    - Non-parallelizable code: initialization, interaction.
-    - Bottlenecks from shared resources, e.g. network.
+    - Non-parallelizable code: initialization, interaction. *- overhead*
+    - **Bottlenecks from shared resources, e.g. network.**
   - Note that some performance problems aren't easily attacked by scaling
-    - e.g. decreasing response time for a single user request
+    - e.g. decreasing response time for a **single user request**
     - might require programmer effort rather than just more computers
 
 - Topic: fault tolerance
@@ -87,8 +87,7 @@ http://pdos.csail.mit.edu/6.824
     - only practical with 1000s of computers
     - often *not* developed by distributed systems experts
     - distribution can be very painful, e.g. coping with failure
-  - overall goal: non-specialist programmers can easily split
-    data processing over many servers with reasonable efficiency.
+  - overall goal: non-specialist programmers can easily split data processing over many servers with reasonable efficiency.
   - programmer defines Map and Reduce functions
     - sequential code; often fairly simple
   - MR runs the functions on 1000s of machines with huge inputs and hides details of distribution
@@ -99,10 +98,10 @@ http://pdos.csail.mit.edu/6.824
   Input1 -> Map -> a,1 b,1 c,1  
   Input2 -> Map ->     b,1  
   Input3 -> Map -> a,1     c,1  
-                    |   |   |  
-                    |   |   -> Reduce -> c,2  
-                    |   -----> Reduce -> b,2  
-                    ---------> Reduce -> a,2  
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   |   |  
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   |   -> Reduce -> c,2  
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   -----> Reduce -> b,2  
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ---------> Reduce -> a,2  
   - MR calls Map() for each input file, produces set of k2,v2
     - "intermediate" data
     - each Map() call is a "task"

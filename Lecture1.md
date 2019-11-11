@@ -94,19 +94,19 @@ http://pdos.csail.mit.edu/6.824
 
 - Abstract view of MapReduce
   - input is divided into M files
-  - [diagram: maps generate rows of K-V pairs, reduces consume columns]
+  - [diagram: maps generate rows of K-V pairs, reduces consume columns]  
   Input1 -> Map -> a,1 b,1 c,1  
-  Input2 -> Map ->     b,1  
-  Input3 -> Map -> a,1     c,1  
+  Input2 -> Map -> &nbsp; &nbsp; &nbsp; &nbsp; b,1  
+  Input3 -> Map -> a,1&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; c,1  
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   |   |  
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   |   -> Reduce -> c,2  
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |   -----> Reduce -> b,2  
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ---------> Reduce -> a,2  
-  - MR calls Map() for each input file, produces set of k2,v2
-    - "intermediate" data
+  - MR calls Map() for each input file, produces set of **k2,v2**
+    - **"intermediate" data**
     - each Map() call is a "task"
   - MR gathers all intermediate v2's for a given k2, and passes them to a Reduce call
-  - final output is set of <k2,v3> pairs from Reduce() stored in R output files
+  - final output is set of **<k2,v3>** pairs from Reduce() stored in R output files
   - [diagram: MapReduce API --
    map(k1, v1) -> list(k2, v2)
    reduce(k2, list(v2) -> list(k2, v3)]
@@ -121,16 +121,17 @@ http://pdos.csail.mit.edu/6.824
     - emit(len(v))
 
 - MapReduce hides many painful details:
-  - starting s/w on servers **???**
+  - starting s/w on servers
   - tracking which tasks are done
   - data movement
   - recovering from failures
 
 - MapReduce scales well:
   - N computers gets you Nx throughput.
-    - Assuming M and R are >= N (i.e., lots of input files and map output keys).
+    - Assuming M and R are >= N (i.e., lots of input files and map output keys). - 数据和计算量大于机器数目
     - Maps()s can run in parallel, since they don't interact.
     - Same for Reduce()s.
+    - -> mapper reducer相互不影响
     - The only interaction is via the **"shuffle"** in between maps and reduces.
   - So you can get more throughput by buying more computers.
     - Rather than special-purpose efficient parallelizations of each application.
@@ -151,13 +152,14 @@ http://pdos.csail.mit.edu/6.824
 
 - More details (paper's Figure 1):
   - **master**: gives tasks to workers; remembers where intermediate output is M Map tasks, R Reduce tasks
-  - input stored in GFS, 3 copies of each Map input file
-  - all computers run both GFS and MR workers
+  - input stored in GFS, 3 copies of each Map input file **replica**
+  - all computers run **both GFS and MR workers**
   - many more input tasks than workers
   - master gives a Map task to each worker
     - hands out new tasks as old ones finish
   - Map worker hashes intermediate keys into R partitions, on local disk
   - Q: What's a good data structure for implementing this?
+    - hashtable?
   - **no Reduce calls until all Maps are finished**
   - master tells Reducers to fetch intermediate data partitions from Map workers
   - Reduce workers write final output to GFS **(one file per Reduce task)**
@@ -170,7 +172,7 @@ http://pdos.csail.mit.edu/6.824
     - Q: Why not stream the records to the reducer (via TCP) as they are being produced by the mappers?
       - 因为需要先shuffle，并且等到所有map tasks完成才可以reduce?
 
-- How do they get good load balance?
+- How do they get good **load balance**?
   - Critical to scaling -- bad for N-1 servers to wait for 1 to finish.
   - But some tasks likely take longer than others.
   [diagram: packing variable-length tasks into workers]
@@ -179,11 +181,12 @@ http://pdos.csail.mit.edu/6.824
     - So no task is so big it dominates completion time (hopefully).
     - So faster servers do more work than slower ones, finish at the same time.
 
-- What about fault tolerance?
+- What about **fault tolerance**?
   - I.e. what if a server crashes during a MR job?
   - Hiding failures is a huge part of ease of programming!
   - Q: Why not re-start the whole job from the beginning?
-  - MR re-runs just the failed Map()s and Reduce()s.
+    - too much redundancy and duplication -> slow?
+  - MR **re-runs just the failed** Map()s and Reduce()s.
     - MR requires them to be pure functions:
       - they don't keep state across calls,
       - they don't read or write files other than expected MR inputs/outputs,
@@ -194,7 +197,7 @@ http://pdos.csail.mit.edu/6.824
 
 - Details of worker crash recovery:
   - Map worker crashes:
-    - **master sees worker no longer responds to pings** - master如何知道workder崩溃
+    - **master sees worker no longer responds to pings** - master如何知道worker崩溃
     - crashed worker's intermediate Map **output is lost**
       - but is likely needed by every Reduce task!
     - master re-runs, spreads tasks over other GFS replicas of input.
@@ -202,10 +205,10 @@ http://pdos.csail.mit.edu/6.824
       - here we depend on functional and deterministic Map()!
     - master need not re-run Map if Reduces have fetched all intermediate data though then *a Reduce crash would then force re-execution of failed Map*
   - Reduce worker crashes.
-    - finshed tasks are OK -- stored in GFS, with replicas.
+    - finished tasks are OK -- stored in GFS, with replicas.
     - master re-starts worker's unfinished tasks on other workers.
   - Reduce worker crashes in the middle of writing its output.
-    - GFS has atomic rename that prevents output from being visible until complete.
+    - GFS has *atomic rename* that prevents output from being visible until complete.
     so it's safe for the master to re-run the Reduce tasks somewhere else.
   - **my notes**
     - In computing, **rename** refers to the altering of a name of a file.

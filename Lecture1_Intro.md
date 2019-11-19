@@ -1,4 +1,4 @@
-#6.824 2018 Lecture 1: Introduction
+# 6.824 2018 Lecture 1: Introduction
 
 ## 6.824: Distributed Systems Engineering
 

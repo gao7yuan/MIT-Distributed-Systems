@@ -138,7 +138,12 @@
 
 - Remote Procedure Call (RPC)
   - a key piece of distributed system machinery; all the labs use RPC
-  - goal: easy-to-program client/server communication
+  - goal:
+    - easy-to-program client/server communication
+    - hides most details of client/server communication
+    - client call is much like ordinary procedure call
+    - server handlers are much like ordinary procedures
+  - RPC is widely used!
 
 - RPC message diagram:
   ```
